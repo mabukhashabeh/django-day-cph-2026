@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+.mypy_cache/
+.pytest_cache/
+secrets/
+conflict-demo.txt
+.DS_Store
+fixtures/broken/id_rsa
+speaker/
+slides/
+scripts/present.py
