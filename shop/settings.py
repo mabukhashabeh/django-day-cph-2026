@@ -6,6 +6,9 @@ SECRET_KEY = "demo-only-not-for-production"
 DEBUG = True
 ALLOWED_HOSTS: list[str] = ["localhost", "127.0.0.1"]
 
+# Flip this in fixtures/broken/settings_broken.py for the live demo.
+BROKEN_ON_PURPOSE = False
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
