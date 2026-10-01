@@ -5,8 +5,9 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 git restore --staged --worktree -- catalog/views.py catalog/models.py shop/settings.py 2>/dev/null || true
-git restore --staged -- secrets/id_rsa 2>/dev/null || true
-rm -f secrets/id_rsa
+git rm --cached -f secrets/id_rsa 2>/dev/null || true
+git rm --cached -f conflict-demo.txt 2>/dev/null || true
+rm -f secrets/id_rsa conflict-demo.txt
 python - <<'PY'
 from pathlib import Path
 p = Path("shop/settings.py")
