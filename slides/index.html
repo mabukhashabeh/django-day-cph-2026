@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stop relying on discipline — Django Day Copenhagen 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #fff4ec;
+      --ink: #0c1713;
+      --muted: #4a5551;
+      --purple: #6a00bb;
+      --deep: #370061;
+      --coral: #db5461;
+      --cyan: #1fa9c4;
+      --rule: rgba(12, 23, 19, 0.14);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      background: #0c1713;
+      color: var(--ink);
+      font-family: "IBM Plex Sans", "Helvetica Neue", sans-serif;
+    }
+    .deck {
+      height: 100%;
+      display: grid;
+      place-items: center;
+    }
+    .frame {
+      width: min(96vw, 1600px);
+      aspect-ratio: 16 / 9;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+    }
+    .chrome {
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      border-bottom: 1px solid var(--rule);
+      z-index: 2;
+    }
+    .chrome-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--deep);
+    }
+    .chrome-brand img { height: 36px; width: auto; }
+    .chrome-meta { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); }
+    .foot {
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      border-top: 1px solid var(--rule);
+      font-size: 12px;
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+    }
+    .live {
+      display: none;
+      position: absolute;
+      left: 40px;
+      right: 40px;
+      bottom: 56px;
+      z-index: 3;
+      background: #0c1713;
+      color: #fff4ec;
+      padding: 10px 16px 12px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      gap: 2px;
+    }
+    .live.show { display: grid; }
+    .live b { color: #c9a4e7; font-weight: 500; min-width: 42px; display: inline-block; }
+    .live a { color: #7ee0c4; text-decoration: none; }
+    .live a:hover { text-decoration: underline; }
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 64px 0 48px 0;
+      padding: 40px 64px 36px;
+    }
+    .slide.has-live { padding-bottom: 118px; }
+    .slide.on { display: flex; flex-direction: column; justify-content: center; }
+    .slide.title-slide { padding: 36px 64px; }
+    h1 {
+      font-family: Syne, sans-serif;
+      font-weight: 800;
+      font-size: clamp(42px, 5.4vw, 78px);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      max-width: 18ch;
+    }
+    h2 {
+      font-family: Syne, sans-serif;
+      font-weight: 700;
+      font-size: clamp(32px, 3.6vw, 54px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      max-width: 22ch;
+    }
+    .lede { font-size: 26px; line-height: 1.35; max-width: 38ch; color: var(--muted); margin-top: 16px; }
+    .brief { font-size: 20px; line-height: 1.4; max-width: 46ch; color: var(--muted); margin: 8px 0 6px; }
+    .purple { color: var(--purple); }
+    .coral { color: var(--coral); }
+    .list { margin-top: 28px; display: grid; gap: 14px; font-size: 26px; line-height: 1.3; max-width: 42ch; }
+    .list b { color: var(--purple); }
+    ol.list { padding-left: 1.2em; }
+    code, .mono {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.82em;
+    }
+    pre {
+      font-family: "IBM Plex Mono", monospace;
+      background: #0c1713;
+      color: #fff4ec;
+      padding: 22px 26px;
+      font-size: 18px;
+      line-height: 1.45;
+      overflow: auto;
+      margin-top: 22px;
+      max-width: 100%;
+    }
+    pre .add, pre .ok { color: #7ee0c4; }
+    pre .del, pre .fail { color: #ff9aa4; }
+    pre .com { color: #9aa8a3; }
+    .row { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; }
+    .fact {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 16px;
+      align-items: start;
+      font-size: 24px;
+      line-height: 1.35;
+      margin-top: 22px;
+      max-width: 48ch;
+    }
+    .num {
+      font-family: Syne, sans-serif;
+      font-size: 28px;
+      color: var(--purple);
+    }
+    .spine {
+      font-family: Syne, sans-serif;
+      font-size: clamp(34px, 4vw, 58px);
+      line-height: 1.12;
+      max-width: 16ch;
+    }
+    .pony {
+      position: absolute;
+      right: 48px;
+      bottom: 72px;
+      width: 220px;
+      opacity: 0.92;
+      pointer-events: none;
+    }
+    .title-slide .pony { width: 280px; bottom: 80px; right: 56px; }
+    .badge {
+      display: inline-block;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 13px;
+      color: var(--purple);
+      margin-bottom: 16px;
+    }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 24px; }
+    .panel {
+      border: 1px solid var(--rule);
+      padding: 22px 24px;
+    }
+    .panel h3 { font-family: Syne, sans-serif; font-size: 22px; margin-bottom: 8px; }
+    .panel p { color: var(--muted); font-size: 18px; line-height: 1.4; }
+    .viz h2 { font-size: clamp(28px, 3.1vw, 42px); max-width: 24ch; }
+    .kicker {
+      font-family: "IBM Plex Mono", monospace; font-size: 12px;
+      color: var(--purple); margin: 0 0 8px; letter-spacing: 0.04em;
+    }
+    .win {
+      border: 1px solid var(--rule); overflow: hidden; background: var(--paper);
+      box-shadow: 0 12px 32px rgba(12,23,19,.08);
+    }
+    .win-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; background: #f6e8dc; border-bottom: 1px solid var(--rule);
+      font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted);
+    }
+    .win-dots { display: flex; gap: 6px; }
+    .win-dots i { width: 9px; height: 9px; border-radius: 50%; background: #c9b8aa; display: block; }
+    .win-dots i:nth-child(1) { background: #db5461; }
+    .win-dots i:nth-child(2) { background: #c9a227; }
+    .win-dots i:nth-child(3) { background: #3d9b74; }
+    .deck-mini { padding: 18px 20px 22px; min-height: 176px; }
+    .mini-badge { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--purple); margin-bottom: 10px; }
+    .mini-h { font-family: Syne, sans-serif; font-size: 22px; line-height: 1.1; letter-spacing: -0.03em; max-width: 16ch; }
+    .mini-p { font-size: 14px; color: var(--muted); margin-top: 10px; max-width: 28ch; }
+    .ide { background: #0c1713; color: #fff4ec; min-height: 176px; display: grid; grid-template-rows: 1fr auto; }
+    .ide-ed {
+      display: grid; grid-template-columns: 36px 1fr;
+      font-family: "IBM Plex Mono", monospace; font-size: 15px; line-height: 1.55; padding-top: 10px;
+    }
+    .ide-ln { color: #5a6863; text-align: right; padding: 0 8px; }
+    .ide-code { padding: 0 14px 10px; }
+    .ide-term {
+      border-top: 1px solid rgba(255,244,236,.12); padding: 10px 14px 12px;
+      font-family: "IBM Plex Mono", monospace; font-size: 14px; line-height: 1.5; color: #9aa8a3;
+    }
+    .hl { background: rgba(106,0,187,.4); color: #fff4ec; padding: 0 5px; }
+    .tiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .tile { border: 1px solid var(--rule); padding: 12px; }
+    .tile .cap { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--purple); margin-bottom: 8px; }
+    .shot {
+      font-family: "IBM Plex Mono", monospace; font-size: 13px; line-height: 1.45;
+      background: #0c1713; color: #fff4ec; padding: 10px 12px; min-height: 74px;
+    }
+    .shot .fail, .ide-term .fail { color: #ff9aa4; }
+    .shot .ok { color: #7ee0c4; }
+    .shot .dim, .ide-term .p { color: #9aa8a3; }
+    .map { display: grid; gap: 10px; margin-top: 18px; }
+    .map-row { display: grid; grid-template-columns: 1fr 28px 1fr; gap: 10px; align-items: center; }
+    .map-row .from, .map-row .to { border: 1px solid var(--rule); padding: 12px 14px; font-size: 16px; }
+    .map-row .from { color: var(--muted); }
+    .map-row .to { font-family: "IBM Plex Mono", monospace; font-size: 15px; }
+    .map-row .arrow { color: var(--purple); font-size: 22px; text-align: center; }
+    @keyframes rise {
+      from { transform: translateY(10px); }
+      to { transform: none; }
+    }
+    .slide.on .rise { animation: rise .42s ease both; }
+    .slide.on .rise:nth-child(1) { animation-delay: .05s; }
+    .slide.on .rise:nth-child(2) { animation-delay: .12s; }
+    .slide.on .rise:nth-child(3) { animation-delay: .19s; }
+    .slide.on .rise:nth-child(4) { animation-delay: .26s; }
+    .slide.on .rise:nth-child(5) { animation-delay: .33s; }
+    .slide.on .rise:nth-child(6) { animation-delay: .4s; }
+    .notes {
+      display: none;
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      background: #0c1713;
+      color: #fff4ec;
+      padding: 14px 18px;
+      font-size: 15px;
+      z-index: 20;
+      max-height: 22vh;
+      overflow: auto;
+    }
+    .notes.show { display: block; }
+    .help {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(12,23,19,.72);
+      color: #fff4ec;
+      z-index: 30;
+      place-items: center;
+      font-size: 18px;
+      line-height: 1.7;
+      text-align: left;
+    }
+    .help.show { display: grid; }
+    .help inner { background: #0c1713; padding: 28px 36px; }
+    kbd { font-family: "IBM Plex Mono", monospace; background: #1c2a25; padding: 1px 6px; }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="frame" id="frame">
+      <header class="chrome">
+        <div class="chrome-brand">
+          <img src="assets/djangoday.svg" alt="Django Day Copenhagen" />
+          Django Day Copenhagen 2026
+        </div>
+        <div class="chrome-meta">Union · 2 October · 14:55</div>
+      </header>
+      <div class="live" id="live"></div>
+      <footer class="foot">
+        <span>Mohammad Abu Khashabeh · G opens GitHub</span>
+        <span id="count"></span>
+      </footer>
+
+      <section class="slide title-slide on" data-notes="Good afternoon. Click.">
+        <div class="badge">25 minutes · two files at the end</div>
+        <h1>Stop relying on <span class="purple">discipline</span></h1>
+        <p class="lede">Pre-commit hooks that catch Django problems early.</p>
+        <img class="pony" src="assets/pony.png" alt="" />
+      </section>
+
+      <section class="slide viz" data-notes="Brief the problems. Point at the shots. Do not read them.">
+        <p class="badge">the problems</p>
+        <h2>Many of us have introduced these.</h2>
+        <div class="tiles">
+          <div class="tile rise">
+            <p class="cap">missing migration</p>
+            <div class="shot"><span class="fail">InconsistentMigrationHistory</span><br><span class="dim">catalog.0007_sku</span><br><span class="dim">applied before 0006</span></div>
+          </div>
+          <div class="tile rise">
+            <p class="cap">F821 · leftover pdb</p>
+            <div class="shot"><span class="ok">machine  ·  14 passed</span><br><span class="fail">CI       ·  1 failed</span><br><span class="dim">same file · not a missing secret</span></div>
+          </div>
+          <div class="tile rise">
+            <p class="cap">leftover breakpoint</p>
+            <div class="shot"><span class="dim">def health(request):</span><br>    <span class="hl">breakpoint()</span><br><span class="dim">    return JsonResponse(…)</span></div>
+          </div>
+          <div class="tile rise">
+            <p class="cap">crash-loop after deploy</p>
+            <div class="shot"><span class="fail">SystemCheckError</span><br><span class="dim">?: (catalog.E001)</span><br><span class="fail">BROKEN_ON_PURPOSE is True</span></div>
+          </div>
+          <div class="tile rise">
+            <p class="cap">secret in history</p>
+            <div class="shot"><span class="fail">-----BEGIN RSA PRIV</span><span class="fail">ATE KEY-----</span><br><span class="dim">MIIEowIBAAK…</span><br><span class="dim">committed 11 days ago</span></div>
+          </div>
+          <div class="tile rise">
+            <p class="cap">format war</p>
+            <div class="shot"><span class="ok">alice saved · 88 cols</span><br><span class="fail">bob saved   · 120 cols</span><br><span class="dim">same PR, two diffs</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide viz" data-notes="Name is self-explanatory. Using it should solve these. Point at the arrows.">
+        <p class="badge">then the tool</p>
+        <h2>The name is self-explanatory. Right?</h2>
+        <div class="map">
+          <div class="map-row rise"><div class="from">missing migration</div><div class="arrow">→</div><div class="to">makemigrations --check</div></div>
+          <div class="map-row rise"><div class="from">breakpoint() · F821</div><div class="arrow">→</div><div class="to">debug-statements · flake8</div></div>
+          <div class="map-row rise"><div class="from">crash-loop after deploy</div><div class="arrow">→</div><div class="to">manage.py check</div></div>
+          <div class="map-row rise"><div class="from">PEM key · format war</div><div class="arrow">→</div><div class="to">detect-private-key · black</div></div>
+        </div>
+      </section>
+
+      <section class="slide" data-notes="Spine. Pause two seconds after.">
+        <p class="badge">the only sentence to take home</p>
+        <p class="spine">Local hooks protect the people who installed them.</p>
+        <p class="spine purple" style="margin-top:18px">CI protects the repo.</p>
+      </section>
+
+      <section class="slide viz" data-git="" data-notes="Point at the two windows. Slides stay here. The IDE has the repo. Terminal already in the venv.">
+        <p class="badge">how this talk runs</p>
+        <h2>I will talk and run at the same time.</h2>
+        <div class="two" style="margin-top:16px">
+          <div class="rise">
+            <p class="kicker">this screen</p>
+            <div class="win">
+              <div class="win-bar"><span class="win-dots"><i></i><i></i><i></i></span> slides · index.html</div>
+              <div class="deck-mini">
+                <p class="mini-badge">02 / 30</p>
+                <p class="mini-h">Many of us have introduced these.</p>
+                <p class="mini-p">The dark bar is the file I open. Arrow keys here.</p>
+              </div>
+            </div>
+          </div>
+          <div class="rise">
+            <p class="kicker">the IDE</p>
+            <div class="win">
+              <div class="win-bar"><span class="win-dots"><i></i><i></i><i></i></span> IDE · django-day-cph-2026</div>
+              <div class="ide">
+                <div class="ide-ed">
+                  <div class="ide-ln">3<br>4<br>5<br>6</div>
+                  <div class="ide-code">def health(request):<br>    <span class="hl">breakpoint()</span><br>    return JsonResponse({"ok": True})</div>
+                </div>
+                <div class="ide-term"><span class="p">$ </span>git commit -m "fix: health check"<br><span class="fail">debug-statements................Failed</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-open=".pre-commit-config.yaml" data-git=".pre-commit-config.yaml" data-notes="Walk the tree with a finger. Then Cmd+P the yaml on the next practical slide.">
+        <p class="badge">the repo is the talk</p>
+        <h2>Where I will point</h2>
+        <pre><span class="add">.pre-commit-config.yaml</span>              the stack
+<span class="add">.github/workflows/pre-commit.yml</span>    the CI gate
+catalog/views.py                     demo 1 · breakpoint
+catalog/checks.py                    demo 2 · system check
+catalog/models.py                    demo 3 · missing migration
+scripts/demo-*.sh                    what I type, 45 seconds each</pre>
+      </section>
+
+      <section class="slide" data-notes="manage.py check on staging. Busy, not careless. Discipline does not scale.">
+        <h2>Staging is not a personality test.</h2>
+        <p class="lede">A <code>manage.py check</code> failure reached staging because one machine had the hook, and another did not.</p>
+      </section>
+
+      <section class="slide" data-notes="Three facts tutorials skip. Staged files. Exclude is regex. types python narrows silently.">
+        <h2>What pre-commit actually runs</h2>
+        <div class="fact"><div class="num">1</div><div>Hooks see <b>staged</b> files. Not the working tree. Forget <code>git add</code>, commit the old bug.</div></div>
+        <div class="fact"><div class="num">2</div><div><code>exclude:</code> is a regex, not gitignore. <code>^/migrations/</code> matches almost nothing in an app folder.</div></div>
+        <div class="fact"><div class="num">3</div><div><code>types: [python]</code> on whitespace means templates and YAML are never checked.</div></div>
+      </section>
+
+      <section class="slide" data-open=".pre-commit-config.yaml" data-git=".pre-commit-config.yaml" data-notes="Show the bad exclude. Cmd+P the yaml. Point at exclude: near the top.">
+        <h2>This looks careful. It is a no-op.</h2>
+        <pre><span class="com"># does not match apps/billing/migrations/0007.py</span>
+<span class="del">exclude: "^/migrations/"</span>
+
+<span class="com"># does</span>
+<span class="add">exclude: "migrations/"</span></pre>
+      </section>
+
+      <section class="slide" data-open=".pre-commit-config.yaml" data-git=".pre-commit-config.yaml" data-notes="Order is not taste. Scroll the yaml top to bottom. Formatters before linters.">
+        <h2>Order is the product.</h2>
+        <ol class="list">
+          <li>Hygiene — secrets, <code>breakpoint()</code>, merge markers</li>
+          <li>pyupgrade → autoflake → isort <code>--profile black</code> → black</li>
+          <li>flake8 → bandit → mypy</li>
+          <li>Django: <code>check</code>, then <code>makemigrations --check</code></li>
+        </ol>
+      </section>
+
+      <section class="slide" data-open=".pre-commit-config.yaml" data-git=".pre-commit-config.yaml" data-notes="detect-private-key is PEM only. Point at that hook id in the yaml.">
+        <div class="two">
+          <div>
+            <h2>Hygiene that fires</h2>
+            <div class="list">
+              <div><code>debug-statements</code> catches last night’s <code>breakpoint()</code>.</div>
+              <div><code>detect-private-key</code> catches PEM headers.</div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>It does not catch</h3>
+            <p>AWS keys, GitHub PATs, a Django <code>SECRET_KEY</code> in settings. That needs detect-secrets, gitleaks, or a regex. Say this to your team.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-notes="Excludes are how a gate survives a real repo. mypy vs generated migrations. bandit B101 vs tests.">
+        <h2>Excludes are not cheating.</h2>
+        <p class="lede">mypy on Django migrations will fail a legacy tree and get the hook deleted. Tests are allowed to <code>assert</code> — skip bandit B101.</p>
+      </section>
+
+      <section class="slide" data-notes="Incremental adoption. Hygiene PR first. --all-files in CI until reformat lands.">
+        <h2>A 140k-line tree does not get religion on Monday.</h2>
+        <ol class="list">
+          <li>Hygiene only. One PR.</li>
+          <li>black + isort on one app, or only in CI via <code>--all-files</code>.</li>
+          <li>Then flake8. Then mypy. Then Django checks.</li>
+        </ol>
+      </section>
+
+      <section class="slide" data-open=".pre-commit-config.yaml" data-git=".pre-commit-config.yaml" data-notes="Read the two flags. Scroll to repo: local at the bottom of the yaml.">
+        <h2>The Django part</h2>
+        <pre>- repo: local
+  hooks:
+    - id: django-system-check
+      entry: python manage.py check
+      language: python
+      additional_dependencies: ["django>=5.1"]
+      <span class="add">pass_filenames: false</span>
+      <span class="add">always_run: true</span></pre>
+      </section>
+
+      <section class="slide" data-open="catalog/apps.py" data-git="catalog/apps.py" data-notes="Open apps.py ready() then checks.py. Custom checks must be imported.">
+        <h2>Two more things people miss</h2>
+        <div class="list">
+          <div>Without <code>pass_filenames: false</code>, Git paths get appended. <code>manage.py check views.py</code> is not a command. The hook gets removed.</div>
+          <div>Custom checks in <code>checks.py</code> do nothing until <code>AppConfig.ready()</code> imports them.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-open="scripts/demo-1-secrets-and-breakpoint.sh" data-run="./scripts/demo-1-secrets-and-breakpoint.sh" data-git="scripts/demo-1-secrets-and-breakpoint.sh" data-notes="Go to terminal. Run demo 1. Then reset. Promise not to debug.">
+        <p class="badge">live · or the next two slides</p>
+        <h2>Three mistakes a Django repo actually makes.</h2>
+        <div class="list">
+          <div><b>1</b> <code>breakpoint()</code> + a PEM key</div>
+          <div><b>2</b> <code>manage.py check</code> / <code>catalog.E001</code></div>
+          <div><b>3</b> a model field with no migration</div>
+        </div>
+      </section>
+
+      <section class="slide" data-open="catalog/views.py" data-run="./scripts/demo-1-secrets-and-breakpoint.sh" data-git="fixtures/broken/views_breakpoint.py" data-notes="Backup if demo 1 fails. Read it and move. File is the broken fixture.">
+        <h2>What the terminal should show</h2>
+        <pre>debug-statements....................................................Failed
+- hook id: debug-statements
+- exit code: 1
+
+  catalog/views.py:5: breakpoint()
+
+detect-private-key..................................................Failed
+- hook id: detect-private-key
+  secrets/id_rsa: RSA private key</pre>
+      </section>
+
+      <section class="slide" data-open="catalog/checks.py" data-run="./scripts/demo-2-django-check.sh" data-git="catalog/checks.py" data-notes="Backup demo 2. Point at catalog.E001 in checks.py then run the script.">
+        <h2>Django, not a linter</h2>
+        <pre>django-system-check.................................................Failed
+SystemCheckError: System check identified some issues:
+
+ERRORS:
+<span class="del">?: (catalog.E001) BROKEN_ON_PURPOSE is True.
+    A system check failure like this is what used to reach staging.</span></pre>
+      </section>
+
+      <section class="slide" data-open="catalog/views.py" data-run="./scripts/demo-pass.sh" data-git="catalog/views.py" data-notes="Reset first. Then demo-pass.sh. Green is the product.">
+        <p class="badge">how it looks when it is working</p>
+        <h2>Passed is supposed to be boring.</h2>
+        <pre>black...............................................................<span class="ok">Passed</span>
+flake8..............................................................<span class="ok">Passed</span>
+mypy................................................................<span class="ok">Passed</span>
+django-system-check.................................................<span class="ok">Passed</span>
+django-unmigrated-models............................................<span class="ok">Passed</span>
+<span class="com">[main abc1234] fix: health check</span></pre>
+      </section>
+
+      <section class="slide" data-notes="Do not teach these as tricks. Name them as how the machine lies.">
+        <h2>How a bad commit still “passes” on a machine</h2>
+        <div class="list">
+          <div><b>1</b> Nobody ran <code>pre-commit install</code>. New clone. New hire. The yaml sits in git and does nothing.</div>
+          <div><b>2</b> <code>git commit --no-verify</code> — the hook file is skipped for this one commit.</div>
+          <div><b>3</b> <code>SKIP=debug-statements git commit</code> — one hook silenced, the rest look green.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-open="scripts/demo-4-why-ci.sh" data-run="./scripts/demo-4-why-ci.sh" data-git="scripts/demo-4-why-ci.sh" data-notes="Same file. Required check. That is CI --all-files on this machine.">
+        <h2>Caught anyway — same file, required in CI</h2>
+        <pre><span class="com"># GitHub Actions · branch protection · cannot merge red</span>
+$ pre-commit run --all-files
+
+debug-statements....................................................<span class="fail">Failed</span>
+- catalog/views.py:5: breakpoint()
+
+django-system-check.................................................<span class="fail">Failed</span>
+- catalog.E001 BROKEN_ON_PURPOSE is True</pre>
+      </section>
+
+      <section class="slide" data-open=".github/workflows/pre-commit.yml" data-git=".github/workflows/pre-commit.yml" data-notes="The workflow is six lines. Cmd+P the yml. Required checkbox in GitHub is the actual product.">
+        <h2>The machine is not the repo.</h2>
+        <p class="lede">Local hooks are advisory. Make this check <b>required</b> on the branch. Not optional. Not “we’ll look at the red X”.</p>
+        <pre><span class="com"># .github/workflows/pre-commit.yml</span>
+- uses: actions/setup-python@v5
+- run: pip install -r requirements.txt
+- uses: pre-commit/action@v3.0.1</pre>
+      </section>
+
+      <section class="slide" data-notes="Repeat spine. Two seconds of silence.">
+        <p class="spine">Local hooks protect the people who installed them.</p>
+        <p class="spine purple" style="margin-top:18px">CI protects the repo.</p>
+      </section>
+
+      <section class="slide" data-notes="mypy on every commit makes people skip. pre-push or CI. This is also the when-not slide.">
+        <h2>When this is the wrong tool.</h2>
+        <div class="list">
+          <div>The test suite. Coverage. A missing GitHub secret. Anything that needs a database or the network — that is CI config, not a commit hook.</div>
+          <div>mypy on the whole tree, every commit — <code>pre-push</code> or CI.</div>
+          <div>Ten hooks on Monday in a 140k-line repo.</div>
+          <div>The machine as the only gate. <code>detect-private-key</code> as a secrets program.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-notes="Optional. Cut if rehearsal said so. No vendors.">
+        <p class="badge">optional · two minutes · no vendors</p>
+        <h2>One rule about AI review</h2>
+        <p class="lede">Deterministic checks can <b>block</b> a commit. Probabilistic reviewers can only <b>advise</b>.</p>
+        <p class="lede">Models are fluent. They are not embarrassed. You need more gates, not fewer.</p>
+      </section>
+
+      <section class="slide" data-open=".pre-commit-config.yaml" data-git=".pre-commit-config.yaml" data-git2=".github/workflows/pre-commit.yml" data-notes="Tonight not next quarter. Point at both files. Ben docker one sentence.">
+        <h2>Tonight, not next quarter</h2>
+        <ol class="list">
+          <li>Copy <code>.pre-commit-config.yaml</code></li>
+          <li>Copy the workflow. Make the check required.</li>
+          <li>Exclude <code>migrations/</code> on mypy on purpose.</li>
+          <li>Add the two Django hooks with <code>pass_filenames: false</code></li>
+        </ol>
+      </section>
+
+      <section class="slide" data-git="" data-notes="Close. Thank them. File not a feeling. Then Q&A slide. Do not take questions on this slide.">
+        <h2>Leave with a file, not a feeling.</h2>
+        <p class="lede">Your machine protects you. CI protects everyone else. The file is the same.</p>
+        <p class="lede purple">github.com/mabukhashabeh/django-day-cph-2026</p>
+        <img class="pony" src="assets/pony.png" alt="" />
+      </section>
+
+      <section class="slide" data-notes="Two questions. Repeat each. If silence: why not Ruff, or we already have CI. Hard stop. Hallway.">
+        <p class="badge">two questions · then the hallway</p>
+        <h2>Questions.</h2>
+        <p class="lede">I will take two here. Then I am outside.</p>
+        <p class="lede purple">github.com/mabukhashabeh/django-day-cph-2026</p>
+      </section>
+    </div>
+  </div>
+  <div class="notes" id="notes"></div>
+  <div class="help" id="help"><div>
+    <kbd>→</kbd> <kbd>space</kbd> next &nbsp; <kbd>←</kbd> back<br>
+    <kbd>N</kbd> speaker notes &nbsp; <kbd>F</kbd> fullscreen<br>
+    <kbd>G</kbd> open this file on GitHub &nbsp; <kbd>?</kbd> this<br>
+    LIVE bar = file to open + command to run. Other screen is the repo.
+  </div></div>
+  <script>
+    const REPO = "https://github.com/mabukhashabeh/django-day-cph-2026";
+    const slides = [...document.querySelectorAll(".slide")];
+    const notesEl = document.getElementById("notes");
+    const helpEl = document.getElementById("help");
+    const countEl = document.getElementById("count");
+    const liveEl = document.getElementById("live");
+    let i = 0;
+    function gitUrl(path) {
+      if (!path) return REPO;
+      return REPO + "/blob/main/" + path.replace(/^\//, "");
+    }
+    function syncLive(slide) {
+      const open = slide.dataset.open || "";
+      const run = slide.dataset.run || "";
+      const git = slide.dataset.git || "";
+      const on = Boolean(open || run || git);
+      slide.classList.toggle("has-live", on);
+      if (!on) {
+        liveEl.classList.remove("show");
+        liveEl.innerHTML = "";
+        return;
+      }
+      const rows = [];
+      if (open) rows.push(`<div><b>open</b> Cmd+P &nbsp; ${open}</div>`);
+      if (run) rows.push(`<div><b>run</b>  ${run}</div>`);
+      if (git) {
+        const href = gitUrl(git);
+        rows.push(`<div><b>git</b>  <a href="${href}" target="_blank" rel="noopener">${href.replace("https://", "")}</a></div>`);
+      }
+      liveEl.innerHTML = rows.join("");
+      liveEl.classList.add("show");
+    }
+    function show(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, k) => s.classList.toggle("on", k === i));
+      countEl.textContent = String(i + 1).padStart(2, "0") + " / " + String(slides.length).padStart(2, "0");
+      notesEl.textContent = slides[i].dataset.notes || "";
+      syncLive(slides[i]);
+      history.replaceState(null, "", "#" + (i + 1));
+    }
+    const start = parseInt(location.hash.slice(1), 10);
+    show(Number.isFinite(start) && start > 0 ? start - 1 : 0);
+    addEventListener("keydown", (e) => {
+      if (["ArrowRight", "ArrowDown", "PageDown", " "].includes(e.key)) { e.preventDefault(); show(i + 1); }
+      if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); show(i - 1); }
+      if (e.key === "n" || e.key === "N") notesEl.classList.toggle("show");
+      if (e.key === "f" || e.key === "F") document.documentElement.requestFullscreen?.();
+      if (e.key === "?" || e.key === "h" || e.key === "H") helpEl.classList.toggle("show");
+      if (e.key === "Escape") helpEl.classList.remove("show");
+      if (e.key === "g" || e.key === "G") {
+        const path = slides[i].dataset.git || slides[i].dataset.open || "";
+        window.open(gitUrl(path), "_blank", "noopener");
+      }
+    });
+  </script>
+</body>
+</html>
