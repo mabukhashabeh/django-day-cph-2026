@@ -1,0 +1,4 @@
+# BROKEN_ON_PURPOSE = True  →  catalog.E001
+# Paste this one line over shop/settings.py for demo 2, or run scripts/demo-2-django-check.sh
+
+BROKEN_ON_PURPOSE = True
