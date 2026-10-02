@@ -8,7 +8,7 @@ git restore --staged --worktree -- catalog/views.py catalog/models.py shop/setti
 git rm --cached -f secrets/id_rsa 2>/dev/null || true
 git rm --cached -f conflict-demo.txt 2>/dev/null || true
 rm -f secrets/id_rsa conflict-demo.txt
-python - <<'PY'
+python3 - <<'PY'
 from pathlib import Path
 p = Path("shop/settings.py")
 text = p.read_text()

@@ -172,6 +172,63 @@
       pointer-events: none;
     }
     .title-slide .pony { width: 280px; bottom: 80px; right: 56px; }
+    .slide.me {
+      padding: 0 0 0 48px;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .slide.me .me-copy {
+      position: relative; z-index: 3;
+      max-width: 34ch;
+    }
+    .slide.me h2 { max-width: 16ch; }
+    .slide.me .lede { font-size: 22px; max-width: 28ch; color: var(--muted); }
+    .slide.me .brief {
+      font-size: 17px; line-height: 1.4;
+      max-width: 36ch; margin-top: 12px; color: var(--muted);
+    }
+    .me-photo-well {
+      position: absolute; inset: 0 0 0 30%;
+      overflow: hidden; pointer-events: none; z-index: 0;
+    }
+    .me-photo-blur {
+      position: absolute; right: 0; top: -10%;
+      height: 122%; width: auto;
+      filter: blur(64px) saturate(1.28);
+      opacity: 0.58;
+      transform: scale(1.18);
+    }
+    .me-photo-well::after {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(90deg, var(--paper) 0%, rgba(255,244,236,.88) 18%, rgba(255,244,236,.35) 42%, transparent 62%),
+        linear-gradient(270deg, var(--paper) 0%, rgba(255,244,236,.82) 14%, transparent 34%),
+        radial-gradient(ellipse 72% 60% at 70% 36%, rgba(106,0,187,.26), transparent 70%),
+        radial-gradient(ellipse 50% 42% at 86% 86%, rgba(31,169,196,.16), transparent 72%);
+    }
+    .me-figure {
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 50%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding-right: 28px;
+      z-index: 1;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .me-photo {
+      height: 100%;
+      width: auto;
+      max-width: none;
+      object-fit: contain;
+      object-position: right bottom;
+      filter: drop-shadow(0 18px 40px rgba(55, 0, 97, 0.16));
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+      mask-image: linear-gradient(90deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+    }
     .badge {
       display: inline-block;
       font-family: "IBM Plex Mono", monospace;
@@ -237,6 +294,7 @@
     .map-row .from { color: var(--muted); }
     .map-row .to { font-family: "IBM Plex Mono", monospace; font-size: 15px; }
     .map-row .arrow { color: var(--purple); font-size: 22px; text-align: center; }
+    .map.plain .to { font-family: "IBM Plex Sans", sans-serif; font-size: 16px; }
     @keyframes rise {
       from { transform: translateY(10px); }
       to { transform: none; }
@@ -248,6 +306,13 @@
     .slide.on .rise:nth-child(4) { animation-delay: .26s; }
     .slide.on .rise:nth-child(5) { animation-delay: .33s; }
     .slide.on .rise:nth-child(6) { animation-delay: .4s; }
+    .slide.on .rise:nth-child(7) { animation-delay: .48s; }
+    .map-row .to.not-hook { color: var(--coral); }
+    .nv-gif {
+      display: block; height: 220px; width: auto; max-width: 100%; margin: 12px 0 4px;
+      object-fit: contain; object-position: center bottom;
+      background: #0c1713;
+    }
     .notes {
       display: none;
       position: fixed;
@@ -303,6 +368,22 @@
         <img class="pony" src="assets/pony.png" alt="" />
       </section>
 
+      <section class="slide me" data-notes="Engineering lead and Django contributor. From Jordan. Do not say first talk.">
+        <div class="me-photo-well" aria-hidden="true">
+          <img class="me-photo-blur" src="assets/mohammad.png" alt="" />
+        </div>
+        <div class="me-figure">
+          <img class="me-photo" src="assets/mohammad.png" alt="" />
+        </div>
+        <div class="me-copy">
+          <p class="badge">speaker</p>
+          <h2>Mohammad Abu Khashabeh</h2>
+          <p class="lede">Engineering lead and Django contributor. From Jordan.</p>
+          <p class="brief">Eight years of full-stack work — mostly Python and Django. Frontend when it is needed.</p>
+          <p class="brief">Driven by DevOps: optimizing workflows, bridging development and infrastructure.</p>
+        </div>
+      </section>
+
       <section class="slide viz" data-notes="Brief the problems. Point at the shots. Do not read them.">
         <p class="badge">the problems</p>
         <h2>Many of us have introduced these.</h2>
@@ -331,6 +412,10 @@
             <p class="cap">format war</p>
             <div class="shot"><span class="ok">alice saved · 88 cols</span><br><span class="fail">bob saved   · 120 cols</span><br><span class="dim">same PR, two diffs</span></div>
           </div>
+          <div class="tile rise">
+            <p class="cap">failed tests</p>
+            <div class="shot"><span class="fail">FAILED catalog/tests/test_sku.py</span><br><span class="dim">AssertionError: 0 != 19.99</span><br><span class="fail">14 passed · 1 failed</span></div>
+          </div>
         </div>
       </section>
 
@@ -342,6 +427,7 @@
           <div class="map-row rise"><div class="from">breakpoint() · F821</div><div class="arrow">→</div><div class="to">debug-statements · flake8</div></div>
           <div class="map-row rise"><div class="from">crash-loop after deploy</div><div class="arrow">→</div><div class="to">manage.py check</div></div>
           <div class="map-row rise"><div class="from">PEM key · format war</div><div class="arrow">→</div><div class="to">detect-private-key · black</div></div>
+          <div class="map-row rise"><div class="from">failed tests</div><div class="arrow">→</div><div class="to not-hook">CI. Not the hook.</div></div>
         </div>
       </section>
 
@@ -523,6 +609,7 @@ django-unmigrated-models............................................<span class=
         <div class="list">
           <div><b>1</b> Nobody ran <code>pre-commit install</code>. New clone. New hire. The yaml sits in git and does nothing.</div>
           <div><b>2</b> <code>git commit --no-verify</code> — the hook file is skipped for this one commit.</div>
+          <img class="nv-gif" src="assets/no-verify.gif" alt="" />
           <div><b>3</b> <code>SKIP=debug-statements git commit</code> — one hook silenced, the rest look green.</div>
         </div>
       </section>
@@ -553,13 +640,15 @@ django-system-check.................................................<span class=
         <p class="spine purple" style="margin-top:18px">CI protects the repo.</p>
       </section>
 
-      <section class="slide" data-notes="mypy on every commit makes people skip. pre-push or CI. This is also the when-not slide.">
-        <h2>When this is the wrong tool.</h2>
-        <div class="list">
-          <div>The test suite. Coverage. A missing GitHub secret. Anything that needs a database or the network — that is CI config, not a commit hook.</div>
-          <div>mypy on the whole tree, every commit — <code>pre-push</code> or CI.</div>
-          <div>Ten hooks on Monday in a 140k-line repo.</div>
-          <div>The machine as the only gate. <code>detect-private-key</code> as a secrets program.</div>
+      <section class="slide viz" data-notes="Four jobs this tool should not do. Two reds first: missing GitHub secret is CI config. breakpoint is the same file.">
+        <p class="badge">leave these off the commit</p>
+        <h2>When not to use pre-commit.</h2>
+        <p class="brief">Green on the machine, red in CI is two stories. A missing GitHub secret is CI config. A leftover <code>breakpoint()</code> is the same file.</p>
+        <div class="map plain">
+          <div class="map-row rise"><div class="from">pytest · coverage · database · network</div><div class="arrow">→</div><div class="to">CI. Same as failed tests.</div></div>
+          <div class="map-row rise"><div class="from">mypy on the whole tree, every commit</div><div class="arrow">→</div><div class="to">pre-push, or CI. Slow gates get skipped.</div></div>
+          <div class="map-row rise"><div class="from">ten hooks on Monday</div><div class="arrow">→</div><div class="to">hygiene first. Then one app.</div></div>
+          <div class="map-row rise"><div class="from">detect-private-key as your secrets program</div><div class="arrow">→</div><div class="to">PEM only. CI is still required.</div></div>
         </div>
       </section>
 

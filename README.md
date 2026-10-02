@@ -10,7 +10,13 @@ This repository is two things:
 
 > Local hooks protect the people who installed them. CI protects the repo.
 
-Present **`slides/interactive.html`**, not `index.html`.
+Present **`slides/interactive.html`**, not `index.html`. From the repo root:
+
+```bash
+python3.12 scripts/present.py
+```
+
+Then open http://127.0.0.1:8777/interactive.html and go fullscreen (`F`). **T** opens a real IDE with a live terminal. **G** opens GitHub Actions. Stay in the deck.
 
 ## Configure locally
 
@@ -23,7 +29,7 @@ python manage.py check
 pre-commit run --all-files
 ```
 
-Hallway extras: missing migration, format, F821, leftover conflict markers, then CI-if-you-skipped-local.
+Hallway extras: missing migration, format, F821, leftover conflict markers, then CI-if-you-skipped-local. Reset between each:
 
 ```bash
 ./scripts/demo-1-secrets-and-breakpoint.sh
