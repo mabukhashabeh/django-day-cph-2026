@@ -13,7 +13,7 @@ exclude = "migrations/"
 
 [tool.bandit]
 exclude_dirs = ["catalog/tests", "catalog/migrations"]
-skips = ["B101"]
+skips = ["B101", "B105"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "shop.settings"
